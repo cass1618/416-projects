@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.io.wavfile import read
 
-sample_rate, data = read("test1.wav")
+sample_rate, data = read("message.wav")
 # 48000 Hz, int16
 
 # convert 16-bit samples to floats and normalize
@@ -69,3 +69,6 @@ for n in range(num_chars):
     message += chr(val)
 
 print(message)
+
+with open("message.txt", "w") as file:
+    file.write(message)
