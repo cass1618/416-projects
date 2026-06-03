@@ -73,7 +73,7 @@ def note(midi, duration=.25):
     frequency = 440.0 * (2 ** ((midi-69)/12))
     # create an array containing 48,000 points of time within 1 second
     sample_times = np.linspace(0., duration, int(48000 * duration), endpoint=False)
-    output = (.1 * sawtooth(2 * np.pi * frequency * sample_times)).astype(np.float32)
+    output = (.25 * sawtooth(2 * np.pi * frequency * sample_times)).astype(np.float32)
     return output
 
 # put together 6 lines to make the song
