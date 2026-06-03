@@ -10,6 +10,10 @@ CS 416P Assignment 3
 
 #### 2. [Create a virtual environment](https://docs.python.org/3/library/venv.html)
 
+```bash
+cd code/aleatoric
+```
+
 ###### Linux:
 
 ```bash
@@ -28,9 +32,16 @@ venv\Scripts\activate.bat
 
 #### 4.
 
+#### To play the song:
+
 ```bash
-cd code/aleatoric
 python3 aleatoric.py
+```
+
+#### To save the song to a .wav file
+
+```bash
+python3 aleatoric.py --output filename.wav
 ```
 
 ### What I Did

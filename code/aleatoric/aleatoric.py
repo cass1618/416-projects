@@ -1,5 +1,5 @@
 # Cassandra Copp
-# CS 416
+# CS 416P
 # 3 JUNE 2026
 
 from scipy.io.wavfile import write
@@ -7,6 +7,7 @@ from scipy.signal import sawtooth
 import numpy as np
 import sounddevice as sd
 from random import choice, sample, random, randint
+import argparse
 
 # select a random song structure
 song_structures = ["AABB/CC", "ABAB/CD", "AB/CDDD"]
@@ -31,7 +32,7 @@ line_structure = choice(line_structures)
 tempo = randint(80, 160)
 
 # select random key in range A3 to A4
-keys = ["A", "AS", "B", "C", "CS", "D", "DS", "E", "F", "FS", "G", "GS", "A4"]
+keys = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
 key = choice(keys)
 # find the midi value for the root note
 root = 57 + keys.index(key)
@@ -96,10 +97,21 @@ for line in song:
 audio = np.concatenate(song_waves)
 
 print(f"key: {key} tempo: {tempo} bpm")
-print("progressions:")
+print("lines:")
 for chord, progression in lines.items():
     print(chord, progression)
 print(f"structure: {song_structure}")
 
-sd.play(audio, 48000)
-sd.wait()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", help="Output WAV filename")
+args = parser.parse_args()
+
+if args.output:
+    # convert to 16-bit mono
+    audio16 = (audio * 32767).astype(np.int16)
+    write(args.output, 48000, audio16)
+    print(f"Saved to {args.output}")
+else:
+    sd.play(audio, 48000)
+    sd.wait()
