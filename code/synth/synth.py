@@ -29,3 +29,56 @@ state = {
     'envelope': 0.0,
     'stage': None
 }
+
+# prevent multiple access of state variables
+lock = threading.Lock()
+
+notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+# receives signal from keyboard and new frequency value, resets phase and stage
+def key_on(midi):
+    with lock:
+        state['freq'] = note(midi)
+        state['phase'] = 0.0
+        state['stage'] = 'attack'
+    print(f"playing {notes[midi % 12]}{(midi // 12) - 2} {state['freq']:.2f} hz")
+
+# receives and transmits off signal from keyboard
+def key_off():
+    with lock:
+        state['stage'] = 'release'
+
+# creates new set of samples
+def generate(n_frames):
+    with lock:
+        freq = state['freq']
+        phase = state['phase']
+        env = state['envelope']
+        stage = state['stage']
+
+    output = np.zeros(n_frames)
+
+    for i in range(n_frames):
+        if stage == 'attack':
+            env = min(1.0, env + 1.0 / attack_n)
+            if env >= 1.0:
+                stage = 'sustain'
+        elif stage == 'release':
+            env = max(0.0, env - 1.0 / release_n)
+            if env <= 0.0:
+                stage = None
+                freq = 0.0
+
+        # do not continue playing if frequency falls below 0
+        if freq > 0.0:
+            output[i] = amplitude * env * (2.0 * phase - 1.0)
+            phase += freq / sample_rate
+            phase %= 1.0
+
+    with lock:
+        state['freq'] = freq
+        state['phase'] = phase
+        state['envelope'] = env
+        state['stage'] = stage
+
+    return output
