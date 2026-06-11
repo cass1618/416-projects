@@ -1,6 +1,6 @@
 # Cassandra Copp
 # CS 416P
-# 07 JUNE 2026
+# 10 JUNE 2026
 
 import numpy as np
 from sounddevice import OutputStream
@@ -82,3 +82,30 @@ def generate(n_frames):
         state['stage'] = stage
 
     return output
+
+# listens for input and writes data to outdata 
+def audio_callback(outdata, frames, time, status):
+    outdata[:, 0] = generate(frames)
+
+# wait for input to come in from keyboard
+def midi_listener():
+    print("listening on IAC driver Bus 1")
+    with mido.open_input('IAC Driver Bus 1') as port:
+        for msg in port:
+            if msg.type == 'note_on' and msg.velocity > 0:
+                key_on(msg.note)
+            elif msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0):
+                key_off()
+
+midi_thread = threading.Thread(target=midi_listener, daemon=True)
+midi_thread.start()
+
+print("synth is awaiting signal from midi keyboard. use ctrl+c to turn off.")
+with OutputStream(
+    samplerate=sample_rate,
+    blocksize=block_size,
+    channels=1,
+    dtype='float32',
+    callback=audio_callback
+):
+    midi_thread.join()
